@@ -1,0 +1,14 @@
+# Downloaded user content
+downloaded_images/
+
+# Runtime logs and Python cache
+program.log
+__pycache__/
+*.py[cod]
+
+# Local virtual environments
+.venv/
+venv/
+
+# Installer download (temporary)
+python-installer.exe
