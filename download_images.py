@@ -84,21 +84,37 @@ async def collect_images(page) -> list[dict[str, str]]:
     return await page.locator("img").evaluate_all(
         """images => {
             const found = new Map();
+            const pricePattern = /(?:\\d[\\d.,\\s]*\\s?(?:zł|pln|eur|usd|gbp|czk|sek|nok|dkk|€|\\$|£)|(?:€|\\$|£)\\s?\\d)/i;
+
             for (const image of images) {
                 const url = image.currentSrc || image.src ||
                     image.dataset.src || image.dataset.original;
                 if (!url || !/^https?:/i.test(url)) continue;
                 if (image.naturalWidth < 2 || image.naturalHeight < 2) continue;
+
+                // Menu products are rendered as priced list/article cards. This
+                // excludes restaurant branding, badges, and general page artwork.
+                let menuItem = image.parentElement;
+                for (let depth = 0; menuItem && depth < 10; depth++, menuItem = menuItem.parentElement) {
+                    const isMenuCard = menuItem.tagName === "LI" ||
+                        menuItem.tagName === "ARTICLE" ||
+                        menuItem.getAttribute("role") === "listitem" ||
+                        menuItem.getAttribute("role") === "article";
+                    if (isMenuCard) break;
+                }
+                const menuText = menuItem?.innerText || "";
+                if (!menuItem || menuText.length > 1200 || !pricePattern.test(menuText)) continue;
+
                 if (!found.has(url)) {
                     let name = image.alt || image.getAttribute("title") ||
                         image.getAttribute("aria-label") || "";
                     if (!name) {
-                        let parent = image.parentElement;
-                        for (let depth = 0; parent && depth < 5 && !name; depth++, parent = parent.parentElement) {
-                            const heading = parent.querySelector("h1, h2, h3, h4, [role='heading']");
+                        for (let depth = 0; menuItem && depth < 5 && !name; depth++, menuItem = menuItem.parentElement) {
+                            const heading = menuItem.querySelector("h1, h2, h3, h4, h5, [role='heading']");
                             if (heading?.innerText?.trim()) name = heading.innerText.trim();
                         }
                     }
+                    if (!name) continue;
                     found.set(url, {
                         url,
                         name

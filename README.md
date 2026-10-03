@@ -1,6 +1,6 @@
 # Preuzimanje slika sa web stranice
 
-Skripta otvara uneseni URL u browseru, skrola stranicu da učita slike koje se učitavaju naknadno i sprema pronađene slike u `downloaded_images/<naslov-stranice>/`. Za naziv fajla koristi naslov proizvoda uz sliku (alt tekst ili naslov kartice), a ako on nedostaje koristi naziv iz URL-a. Format slike određuje se po sadržaju, pa se WebP, JPEG i drugi formati spremaju s ispravnim nastavkom. Duplikati dobijaju brojčani nastavak.
+Skripta otvara uneseni URL u browseru, skrola stranicu da učita slike koje se učitavaju naknadno i sprema fotografije hrane i pića iz stavki menija koje imaju cijenu u `downloaded_images/<naslov-stranice>/`. Logotipi, slike restorana, bedževi aplikacija i ostale slike izvan stavki menija se preskaču. Za naziv fajla koristi naslov proizvoda uz sliku (alt tekst ili naslov kartice), a ako on nedostaje slika se preskače. Format slike određuje se po sadržaju, pa se WebP, JPEG i drugi formati spremaju s ispravnim nastavkom. Duplikati dobijaju brojčani nastavak.
 
 ## Pokretanje za korisnike
 
