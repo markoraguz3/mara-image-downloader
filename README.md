@@ -4,17 +4,23 @@ Skripta otvara uneseni URL u browseru, skrola stranicu da učita slike koje se u
 
 ## Pokretanje za korisnike
 
-1. Dvokliknite `Pokreni.bat`.
-2. Pri prvom pokretanju program automatski preuzima i instalira Python, potrebne komponente i browser u korisnički profil. Prozor prikazuje status instalacije; sačekajte da završi. Potrebna je internet veza, uključujući pristup adresi `cdn.playwright.dev` za preuzimanje browsera. Prvo pokretanje može potrajati duže na sporijoj vezi; ako preuzimanje ne uspije, program će pokušati još dva puta.
+1. Preuzmite i pokrenite `MaraImageDownloaderSetup.exe`, zatim završite instalaciju.
+2. Pokrenite program preko ikone na radnoj površini ili iz Start menija.
 3. Zalijepite link stranice u prozor i pritisnite Enter.
 4. Ako se u browseru pojavi CAPTCHA ili sigurnosna provjera, riješite je; program će nastaviti sam. Ne treba se vraćati u terminal niti pritiskati Enter.
 5. Tokom skeniranja i preuzimanja prikazuje se status i napredak. Po završetku se automatski otvara folder sa slikama.
 
+Instalater uključuje Python, potrebne komponente i vlastiti Chromium browser. Korisnik ne mora imati Python, Node.js, Edge ili Chrome instaliran. Internet je potreban za preuzimanje instalatera i otvaranje stranica koje se obrađuju.
+
 Skripta ne zaobilazi CAPTCHA niti druge pristupne kontrole.
 
-Slike se spremaju lokalno u zaseban podfolder unutar `downloaded_images`.
-U slučaju tehničke greške, detalji se zapisuju u `program.log`. Ako instalacija browsera ne uspije, provjerite internet vezu i da firewall ili proxy ne blokira `cdn.playwright.dev`, pa ponovo pokrenite `Pokreni.bat`.
+Slike se spremaju u `%LOCALAPPDATA%\MaraImageDownloader\downloaded_images`, odvojeno od programa, i ostaju sačuvane nakon uklanjanja aplikacije.
+U slučaju tehničke greške, detalji se prikazuju u prozoru programa.
 
 ## Uklanjanje instaliranih komponenti
 
-Dvokliknite `Uninstall.bat` da uklonite Python, Python pakete i Chromium koje je ovaj alat instalirao u korisnički profil. Ova skripta ne briše preuzete slike, programske datoteke ni `program.log`.
+Uklonite program kroz Windows postavke ili pokretanjem `Uninstall.bat` iz instalacijske mape. Preuzete slike ostaju sačuvane u `%LOCALAPPDATA%\MaraImageDownloader\downloaded_images`.
+
+## Izrada instalatera
+
+GitHub Actions workflow `Build Windows installer` izrađuje Windows instalater. Pokrenite ga ručno iz kartice Actions ili napravite tag oblika `v*`; pri izradi browser se preuzima na build runneru i uključuje u instalater. Korisnički računar zato ne mora pristupati Playwright CDN-u.

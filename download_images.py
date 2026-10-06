@@ -1,5 +1,6 @@
 import asyncio
 import mimetypes
+import os
 import re
 import subprocess
 import sys
@@ -14,7 +15,7 @@ if hasattr(sys.stdout, "reconfigure"):
     sys.stdout.reconfigure(encoding="utf-8", errors="replace")
 
 
-OUTPUT_ROOT = Path("downloaded_images")
+OUTPUT_ROOT = Path(os.environ.get("MARA_DATA_DIR", ".")) / "downloaded_images"
 MAX_SCROLLS = 100
 
 
@@ -225,7 +226,30 @@ async def download_page_images(url: str) -> None:
 
     async with async_playwright() as playwright:
         print("Pokrecem browser...")
-        browser = await playwright.chromium.launch(headless=False)
+        browser = None
+        browser_errors = []
+        for browser_name, channel in (
+            ("Microsoft Edge", "msedge"),
+            ("Google Chrome", "chrome"),
+            ("Playwright Chromium", None),
+        ):
+            launch_options = {"headless": False}
+            if channel is not None:
+                launch_options["channel"] = channel
+            try:
+                browser = await playwright.chromium.launch(**launch_options)
+                print(f"Koristim browser: {browser_name}")
+                break
+            except PlaywrightError as error:
+                browser_errors.append(f"{browser_name}: {error}")
+
+        if browser is None:
+            raise RuntimeError(
+                "Nije moguće pokrenuti browser. Instalirajte Microsoft Edge ili Google Chrome. "
+                "Playwright Chromium se može koristiti samo ako je već instaliran.\n"
+                + "\n".join(browser_errors)
+            )
+
         context = await browser.new_context()
         page = await context.new_page()
 
@@ -294,15 +318,21 @@ async def download_page_images(url: str) -> None:
             await browser.close()
 
 
-def main() -> None:
+def main() -> int:
     url = input("Unesi link stranice: ").strip()
     try:
         asyncio.run(download_page_images(url))
     except ValueError as error:
         print(f"Greška: {error}")
+        return 1
+    except RuntimeError as error:
+        print(f"Greška: {error}")
+        return 1
     except PlaywrightError as error:
         print(f"Playwright greška: {error}")
+        return 1
+    return 0
 
 
 if __name__ == "__main__":
-    main()
+    raise SystemExit(main())

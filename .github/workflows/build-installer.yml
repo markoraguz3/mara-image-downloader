@@ -1,0 +1,33 @@
+name: Build Windows installer
+
+on:
+  workflow_dispatch:
+  push:
+    tags:
+      - "v*"
+
+jobs:
+  build:
+    permissions:
+      contents: write
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12.10"
+      - name: Install Inno Setup
+        run: choco install innosetup --yes --no-progress
+      - name: Build installer
+        shell: pwsh
+        run: .\build-installer.ps1
+      - uses: actions/upload-artifact@v4
+        with:
+          name: MaraImageDownloaderSetup
+          path: dist\MaraImageDownloaderSetup.exe
+          if-no-files-found: error
+      - name: Publish installer release
+        if: startsWith(github.ref, 'refs/tags/v')
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh release create "$env:GITHUB_REF_NAME" "dist\MaraImageDownloaderSetup.exe#MARA Image Downloader Setup" --title "MARA Image Downloader $env:GITHUB_REF_NAME" --notes "Windows installer with Python, dependencies, and Chromium included."

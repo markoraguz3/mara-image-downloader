@@ -4,6 +4,9 @@ $localAppData = [System.IO.Path]::GetFullPath($env:LOCALAPPDATA).TrimEnd('\')
 $appDirectory = [System.IO.Path]::GetFullPath(
     (Join-Path $localAppData "MaraImageDownloader")
 ).TrimEnd('\')
+$pythonDirectory = Join-Path $appDirectory "Python"
+$browsersDirectory = Join-Path $appDirectory "browsers"
+$installer = Join-Path $appDirectory "python-installer.exe"
 
 if (-not $appDirectory.StartsWith(
     "$localAppData\",
@@ -14,14 +17,24 @@ if (-not $appDirectory.StartsWith(
 }
 
 if (-not (Test-Path -LiteralPath $appDirectory)) {
-    Write-Host "Python i dodatni browser nisu instalirani. Nema sta ukloniti."
+    Write-Host "Python nije instaliran. Nema sta ukloniti."
     exit 0
 }
 
 try {
-    Remove-Item -LiteralPath $appDirectory -Recurse -Force
-    Write-Host "Uklonjeni su Python, instalirani paketi i browser."
-    Write-Host "Preuzete slike i programske datoteke nisu dirane."
+    $componentsRemoved = $false
+    foreach ($component in @($pythonDirectory, $browsersDirectory, $installer)) {
+        if (Test-Path -LiteralPath $component) {
+            Remove-Item -LiteralPath $component -Recurse -Force
+            $componentsRemoved = $true
+        }
+    }
+    if ($componentsRemoved) {
+        Write-Host "Uklonjeni su Python i instalirani paketi."
+    } else {
+        Write-Host "Python i instalirane komponente nisu pronađene."
+    }
+    Write-Host "Preuzete slike, logovi i programske datoteke nisu dirani."
 } catch {
     Write-Host "Nije moguce ukloniti instalirane komponente: $($_.Exception.Message)" -ForegroundColor Red
     Write-Host "Zatvorite browser i pokusajte ponovo."
