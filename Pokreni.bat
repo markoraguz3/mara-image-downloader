@@ -6,6 +6,14 @@ title Preuzimanje slika sa stranice
 
 if not exist "%~dp0Python\python.exe" goto Bootstrap
 
+if exist "%~dp0app-version.txt" if exist "%~dp0Update-Application.ps1" (
+    powershell.exe -NoLogo -NoProfile -ExecutionPolicy Bypass -File "%~dp0Update-Application.ps1"
+    if errorlevel 1 (
+        echo.
+        echo Provjera azuriranja nije uspjela. Nastavljam s trenutnom verzijom.
+    )
+)
+
 set "PLAYWRIGHT_BROWSERS_PATH=%~dp0browsers"
 set "MARA_DATA_DIR=%LOCALAPPDATA%\MaraImageDownloader"
 if not exist "%LOCALAPPDATA%\MaraImageDownloader" mkdir "%LOCALAPPDATA%\MaraImageDownloader"

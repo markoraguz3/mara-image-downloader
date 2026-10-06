@@ -85,7 +85,7 @@ async def collect_images(page) -> list[dict[str, str]]:
     return await page.locator("img").evaluate_all(
         """images => {
             const found = new Map();
-            const pricePattern = /(?:\\d[\\d.,\\s]*\\s?(?:zł|pln|eur|usd|gbp|czk|sek|nok|dkk|€|\\$|£)|(?:€|\\$|£)\\s?\\d)/i;
+            const pricePattern = /(?:\\d[\\d.,\\s]*\\s?(?:zł|pln|eur|usd|gbp|czk|sek|nok|dkk|lei|mdl|€|\\$|£)|(?:€|\\$|£)\\s?\\d)/i;
 
             for (const image of images) {
                 const url = image.currentSrc || image.src ||
@@ -109,6 +109,7 @@ async def collect_images(page) -> list[dict[str, str]]:
                 if (!found.has(url)) {
                     let name = image.alt || image.getAttribute("title") ||
                         image.getAttribute("aria-label") || "";
+                    name = name.replace(/\\s+-\\s+["“].*$/u, "").trim();
                     if (!name) {
                         for (let depth = 0; menuItem && depth < 5 && !name; depth++, menuItem = menuItem.parentElement) {
                             const heading = menuItem.querySelector("h1, h2, h3, h4, h5, [role='heading']");

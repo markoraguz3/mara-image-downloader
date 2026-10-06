@@ -1,5 +1,7 @@
 #define AppName "MARA Image Downloader"
+#ifndef AppVersion
 #define AppVersion "1.0.0"
+#endif
 
 [Setup]
 AppId={{0C91D1D8-DA59-4DC1-87DF-3C8749A44A21}

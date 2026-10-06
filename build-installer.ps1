@@ -8,6 +8,11 @@ $embeddedPythonZip = Join-Path $buildDirectory "python-embed.zip"
 $embeddedPythonUrl = "https://www.python.org/ftp/python/3.12.10/python-3.12.10-embed-amd64.zip"
 $installerScript = Join-Path $root "MaraImageDownloader.iss"
 $installerOutput = Join-Path $root "dist"
+$appVersion = if ($env:MARA_APP_VERSION -match '^\d+\.\d+\.\d+$') {
+    $env:MARA_APP_VERSION
+} else {
+    "1.0.0"
+}
 
 function Invoke-CheckedCommand {
     param(
@@ -113,12 +118,14 @@ try {
 
 Copy-Item -LiteralPath (Join-Path $root "download_images.py") -Destination $stageDirectory
 Copy-Item -LiteralPath (Join-Path $root "Pokreni.bat") -Destination $stageDirectory
+Copy-Item -LiteralPath (Join-Path $root "Update-Application.ps1") -Destination $stageDirectory
 Copy-Item -LiteralPath (Join-Path $root "Uninstall.bat") -Destination $stageDirectory
 Copy-Item -LiteralPath (Join-Path $root "README.md") -Destination $stageDirectory
+"$appVersion" | Set-Content -LiteralPath (Join-Path $stageDirectory "app-version.txt") -Encoding Ascii
 
 Push-Location $root
 try {
-    Invoke-CheckedCommand -FilePath $iscc -Arguments @("/Qp", $installerScript)
+    Invoke-CheckedCommand -FilePath $iscc -Arguments @("/Qp", "/DAppVersion=$appVersion", $installerScript)
 } finally {
     Pop-Location
 }

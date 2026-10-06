@@ -6,6 +6,10 @@ on:
     tags:
       - "v*"
 
+concurrency:
+  group: build-windows-installer
+  cancel-in-progress: false
+
 jobs:
   build:
     permissions:
@@ -13,6 +17,42 @@ jobs:
     runs-on: windows-latest
     steps:
       - uses: actions/checkout@v4
+      - name: Select app version
+        id: version
+        shell: pwsh
+        env:
+          GH_TOKEN: ${{ github.token }}
+          EVENT_NAME: ${{ github.event_name }}
+          REF_NAME: ${{ github.ref_name }}
+        run: |
+          if ($env:EVENT_NAME -eq "workflow_dispatch") {
+            $releaseJson = gh release list --json tagName --limit 100
+            if ($LASTEXITCODE -ne 0) {
+              throw "Could not list existing GitHub Releases."
+            }
+            $releases = $releaseJson | ConvertFrom-Json
+            $versions = foreach ($release in $releases) {
+              if ($release.tagName -match '^v?(\d+)\.(\d+)\.(\d+)$') {
+                "{0}.{1}.{2}" -f [int]$matches[1], [int]$matches[2], [int]$matches[3]
+              }
+            }
+            $latest = $versions | ForEach-Object { [version]$_ } | Sort-Object -Descending | Select-Object -First 1
+            if ($null -eq $latest) {
+              $nextVersion = [version]"1.0.0"
+            } else {
+              $nextVersion = [version]::new($latest.Major, $latest.Minor, $latest.Build + 1)
+            }
+            $appVersion = $nextVersion.ToString()
+            $releaseTag = "v$appVersion"
+          } else {
+            if ($env:REF_NAME -notmatch '^v?(\d+\.\d+\.\d+)$') {
+              throw "Tag must use semantic version format, for example v1.2.3."
+            }
+            $appVersion = $matches[1]
+            $releaseTag = $env:REF_NAME
+          }
+          "app_version=$appVersion" >> $env:GITHUB_OUTPUT
+          "release_tag=$releaseTag" >> $env:GITHUB_OUTPUT
       - uses: actions/setup-python@v5
         with:
           python-version: "3.12.10"
@@ -20,6 +60,8 @@ jobs:
         run: choco install innosetup --yes --no-progress
       - name: Build installer
         shell: pwsh
+        env:
+          MARA_APP_VERSION: ${{ steps.version.outputs.app_version }}
         run: .\build-installer.ps1
       - uses: actions/upload-artifact@v4
         with:
@@ -27,7 +69,24 @@ jobs:
           path: dist\MaraImageDownloaderSetup.exe
           if-no-files-found: error
       - name: Publish installer release
-        if: startsWith(github.ref, 'refs/tags/v')
         env:
           GH_TOKEN: ${{ github.token }}
-        run: gh release create "$env:GITHUB_REF_NAME" "dist\MaraImageDownloaderSetup.exe#MARA Image Downloader Setup" --title "MARA Image Downloader $env:GITHUB_REF_NAME" --notes "Windows installer with Python, dependencies, and Chromium included."
+          RELEASE_TAG: ${{ steps.version.outputs.release_tag }}
+          APP_VERSION: ${{ steps.version.outputs.app_version }}
+          EVENT_NAME: ${{ github.event_name }}
+          COMMIT_SHA: ${{ github.sha }}
+        shell: pwsh
+        run: |
+          $arguments = @(
+            "release", "create", $env:RELEASE_TAG,
+            "dist\MaraImageDownloaderSetup.exe#MARA Image Downloader Setup",
+            "--title", "MARA Image Downloader $env:RELEASE_TAG",
+            "--notes", "Windows installer with automatic update checks, Python, dependencies, and Chromium."
+          )
+          if ($env:EVENT_NAME -eq "workflow_dispatch") {
+            $arguments += @("--target", $env:COMMIT_SHA)
+          }
+          gh @arguments
+          if ($LASTEXITCODE -ne 0) {
+            throw "Could not publish GitHub Release $env:RELEASE_TAG."
+          }

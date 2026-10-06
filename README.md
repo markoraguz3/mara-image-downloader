@@ -12,6 +12,8 @@ Skripta otvara uneseni URL u browseru, skrola stranicu da učita slike koje se u
 
 Instalater uključuje Python, potrebne komponente i vlastiti Chromium browser. Korisnik ne mora imati Python, Node.js, Edge ili Chrome instaliran. Internet je potreban za preuzimanje instalatera i otvaranje stranica koje se obrađuju.
 
+Pri pokretanju instalirana aplikacija provjerava postoji li novija verzija. Ako postoji, korisnik može potvrditi instalaciju; downloader se zatim pokreće s ažuriranom verzijom. Prva verzija s ovom mogućnošću mora se jednom ručno instalirati na postojeće računare.
+
 Skripta ne zaobilazi CAPTCHA niti druge pristupne kontrole.
 
 Slike se spremaju u `%LOCALAPPDATA%\MaraImageDownloader\downloaded_images`, odvojeno od programa, i ostaju sačuvane nakon uklanjanja aplikacije.
@@ -23,4 +25,4 @@ Uklonite program kroz Windows postavke ili pokretanjem `Uninstall.bat` iz instal
 
 ## Izrada instalatera
 
-GitHub Actions workflow `Build Windows installer` izrađuje Windows instalater. Pokrenite ga ručno iz kartice Actions ili napravite tag oblika `v*`; pri izradi browser se preuzima na build runneru i uključuje u instalater. Korisnički računar zato ne mora pristupati Playwright CDN-u.
+GitHub Actions workflow `Build Windows installer` izrađuje i objavljuje novi GitHub Release. Za automatsko povećanje patch verzije pokrenite workflow ručno iz kartice Actions; alternativno, pushajte tag oblika `v*` da objavite određenu verziju. Instalater uključuje browser, a buduća pokretanja instalirane aplikacije nude ažuriranje iz najnovijeg releasea. Korisnički računar zato ne mora pristupati Playwright CDN-u.
