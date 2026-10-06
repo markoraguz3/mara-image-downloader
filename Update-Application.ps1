@@ -85,6 +85,7 @@ try {
     if ($installerProcess.ExitCode -ne 0) {
         throw "Instalater je završio s kodom $($installerProcess.ExitCode)."
     }
+    exit 10
 } catch {
     [System.Windows.Forms.MessageBox]::Show(
         "Ažuriranje na verziju $latestVersion nije uspjelo:`n$($_.Exception.Message)`n`nPokrećem instaliranu verziju.",

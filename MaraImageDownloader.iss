@@ -28,9 +28,9 @@ Name: "desktopicon"; Description: "Create a desktop shortcut"; GroupDescription:
 Source: "build\installer-stage\*"; DestDir: "{app}"; Flags: ignoreversion recursesubdirs createallsubdirs
 
 [Icons]
-Name: "{autoprograms}\{#AppName}"; Filename: "{app}\Pokreni.bat"; WorkingDir: "{app}"
-Name: "{autodesktop}\{#AppName}"; Filename: "{app}\Pokreni.bat"; WorkingDir: "{app}"; Tasks: desktopicon
+Name: "{autoprograms}\{#AppName}"; Filename: "{sys}\wscript.exe"; Parameters: """{app}\Launch-Application.vbs"""; WorkingDir: "{app}"
+Name: "{autodesktop}\{#AppName}"; Filename: "{sys}\wscript.exe"; Parameters: """{app}\Launch-Application.vbs"""; WorkingDir: "{app}"; Tasks: desktopicon
 Name: "{autoprograms}\Uninstall {#AppName}"; Filename: "{uninstallexe}"
 
 [Run]
-Filename: "{cmd}"; Parameters: "/C ""{app}\Pokreni.bat"""; Description: "Launch {#AppName}"; Flags: postinstall nowait skipifsilent
+Filename: "{sys}\wscript.exe"; Parameters: """{app}\Launch-Application.vbs"""; Description: "Launch {#AppName}"; Flags: postinstall nowait skipifsilent

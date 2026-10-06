@@ -117,7 +117,9 @@ try {
 }
 
 Copy-Item -LiteralPath (Join-Path $root "download_images.py") -Destination $stageDirectory
+Copy-Item -LiteralPath (Join-Path $root "Launch-Application.vbs") -Destination $stageDirectory
 Copy-Item -LiteralPath (Join-Path $root "Pokreni.bat") -Destination $stageDirectory
+Copy-Item -LiteralPath (Join-Path $root "MainWindow.ps1") -Destination $stageDirectory
 Copy-Item -LiteralPath (Join-Path $root "Update-Application.ps1") -Destination $stageDirectory
 Copy-Item -LiteralPath (Join-Path $root "Uninstall.bat") -Destination $stageDirectory
 Copy-Item -LiteralPath (Join-Path $root "README.md") -Destination $stageDirectory

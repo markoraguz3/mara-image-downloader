@@ -79,17 +79,13 @@ try {
         }
     }
 
-    $currentStep = "preuzimanje slika"
-    Write-Host ""
-    & $python (Join-Path $PSScriptRoot "download_images.py")
-    if ($LASTEXITCODE -ne 0) {
-        Stop-WithMessage "Program je završio s greškom."
-    }
-    Write-Host ""
-    Write-Host "Gotovo. Preuzete slike nalaze se u folderu downloaded_images."
+    $currentStep = "pokretanje aplikacije"
     if ($transcriptStarted) {
         Stop-Transcript | Out-Null
     }
+    Start-Process -FilePath "powershell.exe" `
+        -ArgumentList @("-NoLogo", "-NoProfile", "-STA", "-WindowStyle", "Hidden", "-ExecutionPolicy", "Bypass", "-File", "`"$PSScriptRoot\MainWindow.ps1`"") `
+        -WindowStyle Hidden
 } catch {
     Stop-WithMessage "Greska tokom koraka '$currentStep': $($_.Exception.Message)"
 }

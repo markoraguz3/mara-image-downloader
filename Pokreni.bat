@@ -6,30 +6,8 @@ title Preuzimanje slika sa stranice
 
 if not exist "%~dp0Python\python.exe" goto Bootstrap
 
-if exist "%~dp0app-version.txt" if exist "%~dp0Update-Application.ps1" (
-    powershell.exe -NoLogo -NoProfile -ExecutionPolicy Bypass -File "%~dp0Update-Application.ps1"
-    if errorlevel 1 (
-        echo.
-        echo Provjera azuriranja nije uspjela. Nastavljam s trenutnom verzijom.
-    )
-)
-
-set "PLAYWRIGHT_BROWSERS_PATH=%~dp0browsers"
-set "MARA_DATA_DIR=%LOCALAPPDATA%\MaraImageDownloader"
-if not exist "%LOCALAPPDATA%\MaraImageDownloader" mkdir "%LOCALAPPDATA%\MaraImageDownloader"
-"%~dp0Python\python.exe" "%~dp0download_images.py"
-if errorlevel 1 goto BundledFailure
-echo.
-echo Program je zavrsio. Pritisnite bilo koju tipku za zatvaranje ovog prozora.
-pause >nul
+start "" /B powershell.exe -NoLogo -NoProfile -STA -WindowStyle Hidden -ExecutionPolicy Bypass -File "%~dp0MainWindow.ps1"
 exit /b 0
-
-:BundledFailure
-echo.
-echo Program nije mogao zavrsiti. Procitajte poruku iznad.
-echo Prozor ce se zatvoriti za 15 sekundi.
-timeout /t 15 /nobreak >nul
-exit /b 1
 
 :Bootstrap
 powershell.exe -NoLogo -NoProfile -ExecutionPolicy Bypass -File "%~dp0Pokreni.ps1"

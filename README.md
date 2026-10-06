@@ -6,9 +6,9 @@ Skripta otvara uneseni URL u browseru, skrola stranicu da učita slike koje se u
 
 1. Preuzmite i pokrenite `MaraImageDownloaderSetup.exe`, zatim završite instalaciju.
 2. Pokrenite program preko ikone na radnoj površini ili iz Start menija.
-3. Zalijepite link stranice u prozor i pritisnite Enter.
-4. Ako se u browseru pojavi CAPTCHA ili sigurnosna provjera, riješite je; program će nastaviti sam. Ne treba se vraćati u terminal niti pritiskati Enter.
-5. Tokom skeniranja i preuzimanja prikazuje se status i napredak. Po završetku se automatski otvara folder sa slikama.
+3. Zalijepite link stranice u prozor i pritisnite **Preuzmi slike**.
+4. Ako se u browseru pojavi CAPTCHA ili sigurnosna provjera, riješite je; preuzimanje će se nastaviti samo.
+5. Tokom rada prozor prikazuje status. Po završetku automatski se otvara folder sa slikama.
 
 Instalater uključuje Python, potrebne komponente i vlastiti Chromium browser. Korisnik ne mora imati Python, Node.js, Edge ili Chrome instaliran. Internet je potreban za preuzimanje instalatera i otvaranje stranica koje se obrađuju.
 

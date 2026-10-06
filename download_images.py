@@ -1,4 +1,5 @@
 import asyncio
+import argparse
 import mimetypes
 import os
 import re
@@ -320,7 +321,10 @@ async def download_page_images(url: str) -> None:
 
 
 def main() -> int:
-    url = input("Unesi link stranice: ").strip()
+    parser = argparse.ArgumentParser(description="Preuzmi slike proizvoda sa stranice.")
+    parser.add_argument("url", nargs="?", help="Adresa stranice sa menijem")
+    args = parser.parse_args()
+    url = (args.url or input("Unesi link stranice: ")).strip()
     try:
         asyncio.run(download_page_images(url))
     except ValueError as error:
