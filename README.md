@@ -5,7 +5,7 @@ Skripta otvara uneseni URL u browseru, skrola stranicu da učita slike koje se u
 ## Pokretanje za korisnike
 
 1. Dvokliknite `Pokreni.bat`.
-2. Pri prvom pokretanju program automatski preuzima i instalira Python, potrebne komponente i browser u korisnički profil. Prozor prikazuje status instalacije; sačekajte da završi. Potrebna je internet veza.
+2. Pri prvom pokretanju program automatski preuzima i instalira Python, potrebne komponente i browser u korisnički profil. Prozor prikazuje status instalacije; sačekajte da završi. Potrebna je internet veza, uključujući pristup adresi `cdn.playwright.dev` za preuzimanje browsera. Prvo pokretanje može potrajati duže na sporijoj vezi; ako preuzimanje ne uspije, program će pokušati još dva puta.
 3. Zalijepite link stranice u prozor i pritisnite Enter.
 4. Ako se u browseru pojavi CAPTCHA ili sigurnosna provjera, riješite je; program će nastaviti sam. Ne treba se vraćati u terminal niti pritiskati Enter.
 5. Tokom skeniranja i preuzimanja prikazuje se status i napredak. Po završetku se automatski otvara folder sa slikama.
@@ -13,7 +13,7 @@ Skripta otvara uneseni URL u browseru, skrola stranicu da učita slike koje se u
 Skripta ne zaobilazi CAPTCHA niti druge pristupne kontrole.
 
 Slike se spremaju lokalno u zaseban podfolder unutar `downloaded_images`.
-U slučaju tehničke greške, detalji se zapisuju u `program.log`.
+U slučaju tehničke greške, detalji se zapisuju u `program.log`. Ako instalacija browsera ne uspije, provjerite internet vezu i da firewall ili proxy ne blokira `cdn.playwright.dev`, pa ponovo pokrenite `Pokreni.bat`.
 
 ## Uklanjanje instaliranih komponenti
 

@@ -61,6 +61,7 @@ try {
     }
 
     $env:PLAYWRIGHT_BROWSERS_PATH = $browsersDirectory
+    $env:PLAYWRIGHT_DOWNLOAD_CONNECTION_TIMEOUT = "600000"
     $currentStep = "provjera Python instalacije"
     Write-Host "Provjeravam potrebne komponente..."
     & $python -m pip --version *> $null
@@ -83,9 +84,23 @@ try {
 
     $currentStep = "instalacija browsera"
     Write-Host "Provjeravam i pripremam browser. Ovo moze potrajati pri prvom pokretanju..."
-    & $python -m playwright install chromium
-    if ($LASTEXITCODE -ne 0) {
-        Stop-WithMessage "Instalacija browsera nije uspjela. Provjerite internet vezu i pokušajte ponovo."
+    $browserInstalled = $false
+    for ($attempt = 1; $attempt -le 3; $attempt++) {
+        if ($attempt -gt 1) {
+            Write-Host "Pokusaj $attempt od 3..."
+        }
+        & $python -m playwright install chromium
+        if ($LASTEXITCODE -eq 0) {
+            $browserInstalled = $true
+            break
+        }
+        if ($attempt -lt 3) {
+            Write-Host "Preuzimanje nije uspjelo. Pokusavam ponovo za 5 sekundi..."
+            Start-Sleep -Seconds 5
+        }
+    }
+    if (-not $browserInstalled) {
+        Stop-WithMessage "Preuzimanje browsera nije uspjelo ni nakon 3 pokusaja. Provjerite internet vezu i da li firewall ili proxy blokira cdn.playwright.dev, pa ponovo pokrenite Pokreni.bat."
     }
 
     $currentStep = "preuzimanje slika"
