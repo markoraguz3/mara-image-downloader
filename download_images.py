@@ -16,10 +16,11 @@ try:
         create_plate,
         crop_to_food,
         list_images,
+        process_image_with_folders,
         remove_background_from_image,
     )
 except ImportError:  # pragma: no cover - used when running in a minimal environment
-    create_plate = crop_to_food = list_images = remove_background_from_image = None
+    create_plate = crop_to_food = list_images = process_image_with_folders = remove_background_from_image = None
 
 
 if hasattr(sys.stdout, "reconfigure"):
@@ -45,32 +46,34 @@ def open_folder(path: Path) -> None:
 def process_downloaded_images(folder: Path) -> Path:
     if not folder.exists():
         return folder
-    if list_images is None or remove_background_from_image is None or create_plate is None:
+    if (
+        list_images is None
+        or remove_background_from_image is None
+        or create_plate is None
+        or process_image_with_folders is None
+    ):
         print("Uklanjanje pozadine je onemogućeno jer nisu instalirane potrebne biblioteke.")
         return folder
 
+    clean_dir = folder.parent / f"{folder.name}_no_background"
     output_dir = folder.parent / f"{folder.name}_plated"
-    print(f"Obrada slika za tanjir: {folder} -> {output_dir}")
+    print(f"Obrada slika za tanjir: {folder}")
+    print(f"Pravim folder bez pozadine: {clean_dir}")
+    print(f"Pravim folder sa tanjirom: {output_dir}")
     processed = 0
     for image_path in list_images(folder):
         try:
-            cleaned = remove_background_from_image(image_path)
-            food = crop_to_food(cleaned)
-            plated = create_plate(food)
-            output_dir.mkdir(parents=True, exist_ok=True)
-            final_path = output_dir / f"{image_path.stem}_plated.png"
-            index = 2
-            while final_path.exists():
-                final_path = output_dir / f"{image_path.stem}_plated_{index}.png"
-                index += 1
-            plated.save(final_path)
+            clean_path, final_path = process_image_with_folders(image_path, clean_dir, output_dir)
             processed += 1
-            print(f"Obrađeno: {image_path.name} -> {final_path.name}")
+            print(f"Obrađeno: {image_path.name} -> {clean_path.name} | {final_path.name}")
         except Exception as error:  # pragma: no cover - keep downloader resilient
             print(f"Greška pri obradi {image_path.name}: {error}")
 
     if processed:
-        print(f"Završena obrada. Spremio sam {processed} finalnih slika u {output_dir}")
+        print(
+            f"Završena obrada. Spremio sam {processed} slika bez pozadine u {clean_dir} "
+            f"i {processed} slika sa tanjirom u {output_dir}"
+        )
     else:
         print("Nijedna slika nije obrađena.")
     return output_dir

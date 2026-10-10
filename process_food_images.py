@@ -22,7 +22,7 @@ except ImportError:  # pragma: no cover - handled at runtime
     remove = None
 
 TARGET_SIZE = 350
-MAX_FOOD_SIZE = 250
+MAX_FOOD_SIZE = 260
 IMAGE_EXTENSIONS = {".jpg", ".jpeg", ".png", ".webp", ".bmp", ".gif"}
 
 
@@ -106,25 +106,31 @@ def create_plate(food_image: Image.Image, size: int = TARGET_SIZE) -> Image.Imag
 
     shadow = Image.new("RGBA", (size, size), (0, 0, 0, 0))
     shadow_draw = ImageDraw.Draw(shadow)
-    shadow_draw.ellipse((38, 60, size - 38, size - 26), fill=(0, 0, 0, 90))
+    shadow_draw.ellipse((40, 70, size - 40, size - 30), fill=(0, 0, 0, 90))
     plate = Image.alpha_composite(plate, shadow)
 
     plate_base = Image.new("RGBA", (size, size), (0, 0, 0, 0))
     plate_draw = ImageDraw.Draw(plate_base)
-    plate_draw.ellipse((28, 18, size - 28, size - 18), fill=(247, 242, 236, 255))
-    plate_draw.ellipse((56, 42, size - 56, size - 42), fill=(255, 255, 255, 30))
+    plate_draw.ellipse((0, 0, size, size), fill=(247, 242, 236, 255))
+    plate_draw.ellipse((30, 30, size - 30, size - 30), fill=(255, 255, 255, 30))
     plate = Image.alpha_composite(plate, plate_base)
 
     rim = Image.new("RGBA", (size, size), (0, 0, 0, 0))
     rim_draw = ImageDraw.Draw(rim)
-    rim_draw.ellipse((25, 15, size - 25, size - 15), outline=(198, 183, 167, 255), width=10)
+    rim_draw.ellipse((8, 8, size - 8, size - 8), outline=(198, 183, 167, 255), width=12)
     plate = Image.alpha_composite(plate, rim)
 
     food = resize_to_fit(food_image, MAX_FOOD_SIZE)
     x = (size - food.width) // 2
-    y = (size - food.height) // 2 - 10
+    y = max(18, (size - food.height) // 2 - 8)
     plate.paste(food, (x, y), food)
     return plate
+
+
+def save_png(image: Image.Image, target_path: Path) -> Path:
+    target_path.parent.mkdir(parents=True, exist_ok=True)
+    image.convert("RGBA").save(target_path, format="PNG")
+    return target_path
 
 
 def process_image(input_path: Path, output_dir: Path) -> Path:
@@ -142,6 +148,28 @@ def process_image(input_path: Path, output_dir: Path) -> Path:
 
     plated.save(final_path)
     return final_path
+
+
+def process_image_with_folders(input_path: Path, clean_dir: Path, plated_dir: Path) -> tuple[Path, Path]:
+    cleaned = remove_background_from_image(input_path)
+    food = crop_to_food(cleaned)
+
+    clean_path = clean_dir / f"{input_path.stem}_clean.png"
+    index = 2
+    while clean_path.exists():
+        clean_path = clean_dir / f"{input_path.stem}_clean_{index}.png"
+        index += 1
+    save_png(food, clean_path)
+
+    plated = create_plate(food)
+    plated_path = plated_dir / f"{input_path.stem}_plated.png"
+    index = 2
+    while plated_path.exists():
+        plated_path = plated_dir / f"{input_path.stem}_plated_{index}.png"
+        index += 1
+    save_png(plated, plated_path)
+
+    return clean_path, plated_path
 
 
 def main() -> int:

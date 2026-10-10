@@ -19,6 +19,16 @@ Skripta ne zaobilazi CAPTCHA niti druge pristupne kontrole.
 Slike se spremaju u `%LOCALAPPDATA%\MaraImageDownloader\downloaded_images`, odvojeno od programa, i ostaju sačuvane nakon uklanjanja aplikacije.
 U slučaju tehničke greške, detalji se prikazuju u prozoru programa.
 
+## Obrada slika i izlazni folderi
+
+Nakon preuzimanja program automatski obrađuje svaku sliku u tri koraka:
+
+1. originalne slike ostaju u `downloaded_images/<naslov-stranice>/`
+2. slike bez pozadine i u PNG formatu spremaju se u `downloaded_images/<naslov-stranice>_no_background/`
+3. slike bez pozadine na tanjiru spremaju se u `downloaded_images/<naslov-stranice>_plated/`
+
+Tanjir se prikazuje u potpunosti, bez rezanja sa strana, dok je hrana i dalje vidljiva u sredini kompozicije.
+
 ## Uklanjanje instaliranih komponenti
 
 Uklonite program kroz Windows postavke ili pokretanjem `Uninstall.bat` iz instalacijske mape. Preuzete slike ostaju sačuvane u `%LOCALAPPDATA%\MaraImageDownloader\downloaded_images`.

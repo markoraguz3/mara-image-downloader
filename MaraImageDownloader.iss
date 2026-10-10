@@ -1,6 +1,6 @@
 #define AppName "MARA Image Downloader"
 #ifndef AppVersion
-#define AppVersion "1.0.0"
+#define AppVersion "1.0.4"
 #endif
 
 [Setup]
