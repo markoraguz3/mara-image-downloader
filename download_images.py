@@ -11,6 +11,16 @@ from urllib.parse import unquote, urlparse
 from playwright.async_api import Error as PlaywrightError
 from playwright.async_api import async_playwright
 
+try:
+    from process_food_images import (
+        create_plate,
+        crop_to_food,
+        list_images,
+        remove_background_from_image,
+    )
+except ImportError:  # pragma: no cover - used when running in a minimal environment
+    create_plate = crop_to_food = list_images = remove_background_from_image = None
+
 
 if hasattr(sys.stdout, "reconfigure"):
     sys.stdout.reconfigure(encoding="utf-8", errors="replace")
@@ -18,6 +28,52 @@ if hasattr(sys.stdout, "reconfigure"):
 
 OUTPUT_ROOT = Path(os.environ.get("MARA_DATA_DIR", ".")) / "downloaded_images"
 MAX_SCROLLS = 100
+
+
+def open_folder(path: Path) -> None:
+    try:
+        if sys.platform.startswith("darwin"):
+            subprocess.Popen(["open", str(path)])
+        elif os.name == "nt":
+            subprocess.Popen(["explorer.exe", str(path)])
+        else:
+            subprocess.Popen(["xdg-open", str(path)])
+    except OSError:
+        print(f"Ne mogu otvoriti folder: {path}")
+
+
+def process_downloaded_images(folder: Path) -> Path:
+    if not folder.exists():
+        return folder
+    if list_images is None or remove_background_from_image is None or create_plate is None:
+        print("Uklanjanje pozadine je onemogućeno jer nisu instalirane potrebne biblioteke.")
+        return folder
+
+    output_dir = folder.parent / f"{folder.name}_plated"
+    print(f"Obrada slika za tanjir: {folder} -> {output_dir}")
+    processed = 0
+    for image_path in list_images(folder):
+        try:
+            cleaned = remove_background_from_image(image_path)
+            food = crop_to_food(cleaned)
+            plated = create_plate(food)
+            output_dir.mkdir(parents=True, exist_ok=True)
+            final_path = output_dir / f"{image_path.stem}_plated.png"
+            index = 2
+            while final_path.exists():
+                final_path = output_dir / f"{image_path.stem}_plated_{index}.png"
+                index += 1
+            plated.save(final_path)
+            processed += 1
+            print(f"Obrađeno: {image_path.name} -> {final_path.name}")
+        except Exception as error:  # pragma: no cover - keep downloader resilient
+            print(f"Greška pri obradi {image_path.name}: {error}")
+
+    if processed:
+        print(f"Završena obrada. Spremio sam {processed} finalnih slika u {output_dir}")
+    else:
+        print("Nijedna slika nije obrađena.")
+    return output_dir
 
 
 def show_progress(label: str, current: int, total: int) -> None:
@@ -230,14 +286,12 @@ async def download_page_images(url: str) -> None:
         print("Pokrecem browser...")
         browser = None
         browser_errors = []
-        for browser_name, channel in (
-            ("Microsoft Edge", "msedge"),
-            ("Google Chrome", "chrome"),
-            ("Playwright Chromium", None),
-        ):
-            launch_options = {"headless": False}
-            if channel is not None:
-                launch_options["channel"] = channel
+        launch_candidates = [
+            ("Playwright Chromium", {"headless": False}),
+            ("Microsoft Edge", {"headless": False, "channel": "msedge"}),
+            ("Google Chrome", {"headless": False, "channel": "chrome"}),
+        ]
+        for browser_name, launch_options in launch_candidates:
             try:
                 browser = await playwright.chromium.launch(**launch_options)
                 print(f"Koristim browser: {browser_name}")
@@ -247,8 +301,7 @@ async def download_page_images(url: str) -> None:
 
         if browser is None:
             raise RuntimeError(
-                "Nije moguće pokrenuti browser. Instalirajte Microsoft Edge ili Google Chrome. "
-                "Playwright Chromium se može koristiti samo ako je već instaliran.\n"
+                "Nije moguće pokrenuti browser. Instalirajte Playwright Chromium sa: python -m playwright install chromium\n"
                 + "\n".join(browser_errors)
             )
 
@@ -314,10 +367,18 @@ async def download_page_images(url: str) -> None:
                 show_progress("Ukupan napredak", index, len(images))
 
             print(f"\nGotovo: preuzeto {downloaded} od {len(images)} slika.")
-            print(f"Otvaram folder sa slikama: {output_folder.resolve()}")
-            subprocess.Popen(["explorer.exe", str(output_folder.resolve())])
+            processed_folder = process_downloaded_images(output_folder)
+            if processed_folder.exists():
+                print(f"Otvaram folder sa slikama: {processed_folder.resolve()}")
+                open_folder(processed_folder)
+            else:
+                print(f"Otvaram folder sa slikama: {output_folder.resolve()}")
+                open_folder(output_folder)
         finally:
-            await browser.close()
+            if browser is not None:
+                await browser.close()
+
+        process_downloaded_images(output_folder)
 
 
 def main() -> int:
